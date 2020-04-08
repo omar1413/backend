@@ -6,6 +6,8 @@ import com.omar.entities.UserEntity;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-	UserEntity findByUsername(String username);
+	public UserEntity findByUsername(String username);
+
+	public UserEntity findByEmail(String email);
 
 }

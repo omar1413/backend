@@ -11,6 +11,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,23 +23,22 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.auth0.jwt.JWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.omar.entities.UserEntity;
 
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
+	@Autowired
 	private AuthenticationManager authenticationManager;
-
-	public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
-		this.authenticationManager = authenticationManager;
-	}
+	private static Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
 	@Override
 	public Authentication attemptAuthentication(HttpServletRequest req, HttpServletResponse res)
 			throws AuthenticationException {
 		try {
-			UserEntity creds = new ObjectMapper().readValue(req.getInputStream(), UserEntity.class);
-			System.out.println("auth");
-			System.out.println(req.getHeader(SecurityConstants.HEADER_STRING));
+			UserCred creds = new ObjectMapper().readValue(req.getInputStream(), UserCred.class);
+
+			logger.debug("authhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+			System.out.println("authhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
+			System.out.println(res.getHeader(SecurityConstants.HEADER_STRING));
 			return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(creds.getUsername(),
 					creds.getPassword(), new ArrayList<>()));
 		} catch (IOException e) {
@@ -53,6 +55,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				.sign(HMAC512(SecurityConstants.SECRET.getBytes()));
 		res.addHeader(SecurityConstants.HEADER_STRING, SecurityConstants.TOKEN_PREFIX + token);
 		System.out.println("auth");
-		System.out.println(req.getHeader(SecurityConstants.HEADER_STRING));
+		System.out.println(res.getHeader(SecurityConstants.HEADER_STRING));
 	}
 }
