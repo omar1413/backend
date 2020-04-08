@@ -87,7 +87,7 @@ public class UserController {
 	}
 
 	@GetMapping("/resetPassword")
-	public ResponseEntity<?> resetPassword(HttpServletRequest request, @RequestParam("email") String userEmail) {
+	public ResponseEntity<?> getResetPassword(HttpServletRequest request, @RequestParam("email") String userEmail) {
 		UserEntity user = userService.findByEmail(userEmail);
 		if (user == null) {
 			return new ResponseEntity<>(new ErrorResponse("No user found"), HttpStatus.NOT_FOUND);
@@ -98,14 +98,28 @@ public class UserController {
 		return null;
 	}
 
+	@PostMapping(path = "/resetPassword/{userId}/{tokenId}")
+	public ResponseEntity<?> resetPassword(HttpServletRequest request, @RequestParam String password,
+			@PathVariable String userId, @PathVariable String tokenId) {
+		PasswordResetToken passwordResetToken = userService.getTokenResetById(Long.parseLong(tokenId));
+		UserEntity user = userService.getById(Long.parseLong(userId));
+		if (passwordResetToken.getUser().getId() == user.getId()) {
+			user.setPassword(password);
+			return new ResponseEntity<>(userService.update(user), HttpStatus.OK);
+		}
+
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+
 	@PostMapping("/check-token")
 	public ResponseEntity<?> checkToken(@RequestParam String token) {
 		PasswordResetToken passwordResetToken = userService.getTokenReset(token);
 		if (passwordResetToken != null) {
-			return new ResponseEntity<>(new GenericResponse("/users/resetPassword/" + passwordResetToken),
+			return new ResponseEntity<>(new GenericResponse(
+					"/users/resetPassword/" + passwordResetToken.getUser().getId() + "/" + passwordResetToken.getId()),
 					HttpStatus.OK);
 		}
-		return null;
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
 }

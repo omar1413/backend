@@ -110,8 +110,17 @@ public class UserService {
 		return passwordTokenRepository.findByToken(token);
 	}
 
+	public PasswordResetToken getTokenResetById(long id) {
+
+		return passwordTokenRepository.findById(id).get();
+	}
+
 	public UserEntity get(String username) {
 		return userRepository.findByUsername(username);
+	}
+
+	public UserEntity getById(Long id) {
+		return userRepository.findById(id).get();
 	}
 
 	public UserEntity findByEmail(String userEmail) {
