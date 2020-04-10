@@ -1,7 +1,5 @@
 package com.omar.controllers;
 
-import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
@@ -10,15 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.omar.entities.PasswordResetToken;
 import com.omar.entities.UserEntity;
 import com.omar.errors.AuthorizationException;
 import com.omar.errors.ErrorResponse;
@@ -38,6 +33,7 @@ public class UserController {
 	@PostMapping("/sign-up")
 	public ResponseEntity<?> signUp(@Valid @RequestBody UserEntity user, HttpServletRequest req,
 			HttpServletResponse res) {
+
 		try {
 			UserEntity result = userService.createUser(user);
 			String token = Utils.createToken(user.getUsername());
@@ -65,61 +61,43 @@ public class UserController {
 //		return null;
 //	}
 
-	@GetMapping(path = "/{id}")
-	public ResponseEntity<?> user(@PathVariable String id, HttpServletRequest req) {
-		String username = "";
+	private UserEntity getAuthorizedUser(HttpServletRequest req) {
+		String username;
 		try {
 			username = Utils.getAuthorizedUser(req);
 		} catch (AuthorizationException e) {
-			ErrorResponse error = new ErrorResponse("Not Authorized");
 
-			return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+			e.printStackTrace();
+			return null;
 		}
 
 		UserEntity user = userService.get(username);
+
+		return user;
+	}
+
+	@GetMapping
+	public ResponseEntity<?> user(HttpServletRequest req) {
+
+		UserEntity user = getAuthorizedUser(req);
+		if (user == null) {
+			return new ResponseEntity<>(user, HttpStatus.UNAUTHORIZED);
+		}
 		return new ResponseEntity<>(user, HttpStatus.OK);
 	}
 
 	@PutMapping
-	public ResponseEntity<?> update(@Valid @RequestBody UserEntity user) {
-
-		return new ResponseEntity<>(userService.update(user), HttpStatus.OK);
-	}
-
-	@GetMapping("/resetPassword")
-	public ResponseEntity<?> getResetPassword(HttpServletRequest request, @RequestParam("email") String userEmail) {
-		UserEntity user = userService.findByEmail(userEmail);
-		if (user == null) {
-			return new ResponseEntity<>(new ErrorResponse("No user found"), HttpStatus.NOT_FOUND);
+	public ResponseEntity<?> update(@Valid @RequestBody UserEntity user, HttpServletRequest req) {
+		UserEntity authedUser = getAuthorizedUser(req);
+		if (authedUser == null) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
-		String token = UUID.randomUUID().toString();
-		userService.createPasswordResetTokenForUser(user, token);
-		Utils.sendEmail(userEmail, "password reset", token);
-		return null;
-	}
-
-	@PostMapping(path = "/resetPassword/{userId}/{tokenId}")
-	public ResponseEntity<?> resetPassword(HttpServletRequest request, @RequestParam String password,
-			@PathVariable String userId, @PathVariable String tokenId) {
-		PasswordResetToken passwordResetToken = userService.getTokenResetById(Long.parseLong(tokenId));
-		UserEntity user = userService.getById(Long.parseLong(userId));
-		if (passwordResetToken.getUser().getId() == user.getId()) {
-			user.setPassword(password);
+		if (authedUser.getId() == user.getId()) {
+			System.out.println("ay 7aga");
 			return new ResponseEntity<>(userService.update(user), HttpStatus.OK);
 		}
 
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-	}
-
-	@PostMapping("/check-token")
-	public ResponseEntity<?> checkToken(@RequestParam String token) {
-		PasswordResetToken passwordResetToken = userService.getTokenReset(token);
-		if (passwordResetToken != null) {
-			return new ResponseEntity<>(new GenericResponse(
-					"/users/resetPassword/" + passwordResetToken.getUser().getId() + "/" + passwordResetToken.getId()),
-					HttpStatus.OK);
-		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
 }

@@ -2,35 +2,21 @@ package com.omar.utils;
 
 import static com.auth0.jwt.algorithms.Algorithm.HMAC512;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Component;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.omar.errors.AuthorizationException;
 import com.omar.security.SecurityConstants;
 
+@Component
 public class Utils {
-
-	@Autowired
-	private static JavaMailSender javaMailSender;
-
-	public static void sendEmail(String to, String subject, String text) {
-
-		SimpleMailMessage msg = new SimpleMailMessage();
-		msg.setTo(to);
-
-		msg.setSubject(subject);
-		msg.setText(text);
-
-		javaMailSender.send(msg);
-
-	}
 
 	public static String createToken(String username) {
 		String token = JWT.create().withSubject(username)
@@ -55,6 +41,16 @@ public class Utils {
 		}
 
 		throw new AuthorizationException();
+	}
+
+	public static List<String> list(String... strs) {
+		List<String> l = new ArrayList<>();
+
+		for (String str : strs) {
+			l.add(str);
+		}
+
+		return l;
 	}
 
 }

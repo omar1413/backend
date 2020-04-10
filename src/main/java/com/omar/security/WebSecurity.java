@@ -15,6 +15,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.omar.services.UserDetailsServiceImpl;
+import com.omar.utils.Utils;
 
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
@@ -29,11 +30,17 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		http.cors().and().csrf().disable()//
 				.headers().disable()//
-				.authorizeRequests().antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL).permitAll()//
-				.antMatchers(HttpMethod.POST, SecurityConstants.SIGN_IN_URL).permitAll()
+				.requiresChannel().anyRequest().requiresSecure()//
+				.and().authorizeRequests().antMatchers(HttpMethod.POST, SecurityConstants.SIGN_UP_URL).permitAll()//
+				.antMatchers(HttpMethod.POST, SecurityConstants.SIGN_IN_URL).permitAll()//
+				.antMatchers(HttpMethod.POST, SecurityConstants.RESET_PASSWORD_URL).permitAll()//
+				.antMatchers(HttpMethod.POST, SecurityConstants.FILE_UPLOAD_URL).permitAll()//
+				.antMatchers(HttpMethod.GET, SecurityConstants.FILE_GET_URL).permitAll()//
 //				.antMatchers(HttpMethod.GET, "/h2-console/**").permitAll()
 				.anyRequest().authenticated()//
-				.and().addFilter(jwtAuthenticationFilter()).addFilter(jwtAuthorizationFilter())
+				.and().addFilter(jwtAuthenticationFilter())//
+				.addFilter(jwtAuthorizationFilter())//
+
 				// this disables session creation on Spring Security
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
@@ -46,8 +53,19 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	CorsConfigurationSource corsConfigurationSource() {
+
+		final CorsConfiguration configuration = new CorsConfiguration();
+		configuration.applyPermitDefaultValues();
+		configuration.setAllowedOrigins(Utils.list("*"));
+		configuration.setAllowedMethods(Utils.list("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+		configuration.setAllowCredentials(true);
+		configuration.setAllowedHeaders(Utils.list("*"));
+		configuration.setExposedHeaders(Utils.list("X-Auth-Token", "Authorization", "Access-Control-Allow-Origin",
+				"Access-Control-Allow-Credentials"));
+
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", new CorsConfiguration().applyPermitDefaultValues());
+
+		source.registerCorsConfiguration("/**", configuration);
 		return source;
 	}
 
