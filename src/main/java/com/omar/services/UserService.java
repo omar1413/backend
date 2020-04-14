@@ -35,6 +35,9 @@ public class UserService {
 		if (result == null) {
 			// String path = saveImage(user.getProfileImage());
 			// user.setProfileImage(path);
+			if (user.getProfileImage() == null || user.getProfileImage().isEmpty()) {
+				user.setProfileImage("place_holder.jpg");
+			}
 			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 			userRepository.save(user);
 			return user;

@@ -1,8 +1,6 @@
 package com.omar.entities;
 
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
@@ -22,14 +20,14 @@ public class UserEntity {
 	@NotNull
 	private String email;
 	private String phone;
-	@Enumerated(EnumType.ORDINAL)
-	private Gender gender;
+	// @Enumerated(EnumType.ORDINAL)
+	private String gender;
 	private int rating;
 	private String registrationDate;
 	private String modificationDate;
 	private String profileImage;
-	@Enumerated(EnumType.ORDINAL)
-	private Status status;
+	// @Enumerated(EnumType.ORDINAL)
+	private String status;
 	private String address;
 	private String lang;
 	private String extra;
@@ -74,11 +72,11 @@ public class UserEntity {
 		this.phone = phone;
 	}
 
-	public Gender getGender() {
+	public String getGender() {
 		return gender;
 	}
 
-	public void setGender(Gender gender) {
+	public void setGender(String gender) {
 		this.gender = gender;
 	}
 
@@ -114,11 +112,11 @@ public class UserEntity {
 		this.profileImage = profileImage;
 	}
 
-	public Status getStatus() {
+	public String getStatus() {
 		return status;
 	}
 
-	public void setStatus(Status status) {
+	public void setStatus(String status) {
 		this.status = status;
 	}
 
