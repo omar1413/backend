@@ -30,9 +30,11 @@ public class UserService {
 	public UserEntity createUser(UserEntity user) throws UserExistException, ImageUploadException {
 
 		UserEntity result = userRepository.findByUsername(user.getUsername());
+		UserEntity emailResult = userRepository.findByEmail(user.getEmail());
 
 		System.out.println(result);
-		if (result == null) {
+		if (result == null && emailResult == null) {
+
 			// String path = saveImage(user.getProfileImage());
 			// user.setProfileImage(path);
 			if (user.getProfileImage() == null || user.getProfileImage().isEmpty()) {
