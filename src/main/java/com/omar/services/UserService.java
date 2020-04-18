@@ -53,8 +53,12 @@ public class UserService {
 
 //		String path = updateImage();
 //		user.setProfileImage(path);
-		user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-
+		UserEntity oldUser = getById(user.getId());
+		if (user.getPassword() == null || user.getPassword().isEmpty()) {
+			user.setPassword(oldUser.getPassword());
+		} else {
+			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+		}
 		return userRepository.save(user);
 
 	}
