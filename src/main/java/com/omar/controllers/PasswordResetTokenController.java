@@ -1,9 +1,8 @@
 package com.omar.controllers;
 
-import java.util.UUID;
-
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +38,7 @@ public class PasswordResetTokenController {
 		if (user == null) {
 			return new ResponseEntity<>(new ErrorResponse("No user found"), HttpStatus.NOT_FOUND);
 		}
-		String token = UUID.randomUUID().toString();
+		String token = RandomStringUtils.randomNumeric(4);
 		passwordResetTokenService.createPasswordResetTokenForUser(user, token);
 		emailService.sendEmail(userEmail, "password reset", token);
 		return null;
