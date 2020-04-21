@@ -3,6 +3,8 @@ package com.omar.entities;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -31,6 +33,14 @@ public class UserEntity {
 	private String address;
 	private String lang;
 	private String extra;
+
+	@ManyToOne
+	@JoinColumn(name = "seller_id")
+	private SellerEntity seller;
+
+	public void setSeller(SellerEntity seller) {
+		this.seller = seller;
+	}
 
 	public long getId() {
 		return id;

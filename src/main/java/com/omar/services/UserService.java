@@ -1,15 +1,19 @@
 package com.omar.services;
 
+import java.util.NoSuchElementException;
+
 import javax.servlet.ServletContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.omar.entities.SellerEntity;
 import com.omar.entities.UserEntity;
 import com.omar.errors.ImageUploadException;
 import com.omar.errors.UserExistException;
 import com.omar.repositories.PasswordTokenRepository;
+import com.omar.repositories.SellerRepository;
 import com.omar.repositories.UserRepository;
 
 @Service
@@ -25,16 +29,35 @@ public class UserService {
 	private UserRepository userRepository;
 
 	@Autowired
+	private SellerRepository sellerRepository;
+
+	@Autowired
 	private PasswordTokenRepository passwordTokenRepository;
 
-	public UserEntity createUser(UserEntity user) throws UserExistException, ImageUploadException {
+	public UserEntity createUser(UserEntity user, String id) throws UserExistException, ImageUploadException {
 
-		UserEntity result = userRepository.findByUsername(user.getUsername());
-		UserEntity emailResult = userRepository.findByEmail(user.getEmail());
+		long sellerId = -1;
+		try {
+			sellerId = Long.parseLong(id);
+		} catch (Exception e) {
+			throw new NoSuchElementException();
+		}
 
-		System.out.println(result);
-		if (result == null && emailResult == null) {
+		SellerEntity sellerResult = sellerRepository.findByUsername(user.getUsername());
+		SellerEntity sellerEmailResult = sellerRepository.findByEmail(user.getEmail());
 
+		UserEntity userResult = userRepository.findByUsername(user.getUsername());
+		UserEntity userEmailResult = userRepository.findByEmail(user.getEmail());
+
+		// System.out.println(result);
+		if (userResult == null && userEmailResult == null && sellerResult == null && sellerEmailResult == null) {
+
+			SellerEntity seller = sellerRepository.findById(sellerId).get();
+			if (seller == null) {
+				throw new UserExistException();
+			}
+
+			user.setSeller(seller);
 			// String path = saveImage(user.getProfileImage());
 			// user.setProfileImage(path);
 			if (user.getProfileImage() == null || user.getProfileImage().isEmpty()) {
