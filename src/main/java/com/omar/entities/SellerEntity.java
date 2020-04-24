@@ -3,6 +3,7 @@ package com.omar.entities;
 import java.sql.Date;
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -36,8 +37,20 @@ public class SellerEntity {
 	Date modificationDate;
 	double rate;
 
+	// 0 is seller - 1 is customer
+	@Column(columnDefinition = "integer default 0")
+	int userType;
+
 	@OneToMany(mappedBy = "seller")
 	private List<UserEntity> users;
+
+	public int getUserType() {
+		return userType;
+	}
+
+	public void setUserType(int userType) {
+		this.userType = userType;
+	}
 
 	public List<UserEntity> getUsers() {
 		return users;

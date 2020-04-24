@@ -8,6 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,8 +16,12 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.omar.services.UserTypeService;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
+
+	@Autowired
+	private UserTypeService userTypeService;
 
 	public JWTAuthorizationFilter(AuthenticationManager authManager) {
 		super(authManager);
@@ -33,13 +38,14 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 			return;
 		}
 
-		UsernamePasswordAuthenticationToken authentication = getAuthentication(req);
+		UsernamePasswordAuthenticationToken authentication = getAuthentication(req, res);
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		chain.doFilter(req, res);
 	}
 
-	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
+	private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request,
+			HttpServletResponse response) {
 		String token = request.getHeader(SecurityConstants.HEADER_STRING);
 		if (token != null) {
 			// parse the token.
@@ -47,6 +53,8 @@ public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 					.verify(token.replace(SecurityConstants.TOKEN_PREFIX, "")).getSubject();
 
 			if (user != null) {
+				String userType = userTypeService.loadUserByUsername(user) + "";
+				response.addHeader(SecurityConstants.USER_TYPE, userType);
 				return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
 			}
 			return null;

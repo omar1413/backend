@@ -12,4 +12,5 @@ public class SecurityConstants {
 
 	public static final String FILE_UPLOAD_URL = "/file";
 	public static final String FILE_GET_URL = "/file/**";
+	public static final String USER_TYPE = "UserType";
 }
